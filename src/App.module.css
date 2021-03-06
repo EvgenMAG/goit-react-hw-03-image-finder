@@ -1,0 +1,16 @@
+.blocks {
+  margin: 0px auto;
+
+  width: 400px;
+}
+.title {
+  text-align: center;
+  font-weight: bold;
+}
+
+.title__contacts {
+  composes: title;
+  font-weight: 400;
+  font-weight: 700;
+  color: brown;
+}
