@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 import s from './ImageGalleryItem.module.css';
 
 const ImageGalleryItem = ({ image, openModal }) => {
-  const { id, webformatURL, largeImageURL, tags } = image;
+  const { webformatURL, largeImageURL, tags } = image;
   return (
-    <li key={id} className={s.ImageGalleryItem}>
+    <li className={s.ImageGalleryItem}>
       <img
         src={webformatURL}
         alt={tags}

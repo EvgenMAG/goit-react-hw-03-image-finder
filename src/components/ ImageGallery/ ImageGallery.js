@@ -32,7 +32,11 @@ class ImageGallery extends Component {
         <ul className={s.gallery}>
           {pictures.map(picture => {
             return (
-              <ImageGalleryItem image={picture} openModal={this.onImageClick} />
+              <ImageGalleryItem
+                key={picture.id}
+                image={picture}
+                openModal={this.onImageClick}
+              />
             );
           })}
         </ul>
