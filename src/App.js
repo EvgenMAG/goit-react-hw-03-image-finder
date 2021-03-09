@@ -1,76 +1,122 @@
 import React, { Component } from 'react';
 
+import Searchbar from './components/Searchbar';
+import ImageGallery from './components/ ImageGallery/ ImageGallery';
+import getImages from './api-service/Api-service';
+import Button from './components/Button';
+
+import Load from './components/Loader/Loader';
+
 import s from './App.module.css';
 
-import Filter from './components/Filter';
-import Form from './components/Form';
-import ContactList from './components/ContactList';
+const Status = {
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+};
 
 class App extends Component {
   state = {
-    contacts: [],
-    filter: '',
+    images: [],
+    query: '',
+    page: 1,
+    totalHits: null,
+    perPage: 12,
+    status: '',
+    error: '',
   };
 
-  onSubmitHandler = data => {
-    const { contacts } = this.state;
-    const newName = data.name.toLowerCase();
-    const newPhone = data.number;
-    if (contacts.find(el => el.name.toLowerCase() === newName)) {
-      return alert(`${newName} is already in contacts`);
-    }
+  componentDidUpdate(prevProps, prevState) {
+    const { query: previousSearch, page: previousPage } = prevState;
+    const { query: currentSearch, page: currentPage } = this.state;
 
-    if (contacts.find(el => el.number.toLowerCase() === newPhone)) {
-      return alert(`${newPhone} is already in contacts`);
+    if (previousSearch !== currentSearch || previousPage !== currentPage) {
+      this.setState({ status: Status.PENDING });
+      this.findImages(currentSearch, currentPage);
     }
-    const newContact = contacts.concat(data);
+  }
 
-    this.setState(prevState => {
-      return { ...prevState, contacts: newContact };
+  findImages = (query, page) => {
+    getImages(query, page)
+      .then(({ hits, totalHits }) => {
+        if (hits.length === 0) {
+          return Promise.reject(
+            new Error(`Ops!Ops!Ops! We couldn't find ${query}`),
+          );
+        }
+        const newImages = hits.map(image => {
+          return {
+            id: image.id,
+            largeImageURL: image.largeImageURL,
+            webformatURL: image.webformatURL,
+            tags: image.tags,
+          };
+        });
+
+        this.setState({
+          images: [...this.state.images, ...newImages],
+          totalHits,
+          status: Status.RESOLVED,
+        });
+        if (this.page !== 1) {
+          window.scrollTo({
+            top:
+              document.documentElement.scrollTop +
+              document.documentElement.clientHeight,
+            behavior: 'smooth',
+          });
+        }
+      })
+      .catch(error => {
+        this.setState({
+          images: [],
+          error: error.message,
+          status: Status.REJECTED,
+        });
+      });
+  };
+
+  onSubmithandler = searchQuery => {
+    this.setState(({ query }) => {
+      if (query === searchQuery) return;
+      return {
+        query: searchQuery,
+        page: 1,
+        images: [],
+      };
     });
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+  incrementPage = () => {
+    this.setState(({ page }) => ({ page: page + 1 }));
   };
 
-  changeFilter = evt => {
-    this.setState({ filter: evt.currentTarget.value });
+  onBtnLoad = () => {
+    this.incrementPage();
   };
-
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(contacts);
-    if (parsedContacts) {
-      this.setState({ contacts: parsedContacts });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    console.log('fuck');
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
 
   render() {
-    const normalizedFilter = this.state.filter.toLowerCase();
-    const foundName = this.state.contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter),
-    );
+    const { images, totalHits, perPage, page, status, error } = this.state;
 
     return (
-      <div className={s.blocks}>
-        <h1 className={s.title}>Phonebook</h1>
-        <Form onSubmit={this.onSubmitHandler} />
-        <h2 className={s.title__contacts}>Contacts</h2>
-        <Filter search={this.state.filter} onChangeInput={this.changeFilter} />
-        <ContactList
-          searchedName={foundName}
-          cleanContactList={this.deleteContact}
-        />
+      <div className={s.App}>
+        <Searchbar onSubmit={this.onSubmithandler} />
+        {(status === 'resolved' || status === 'pending') && (
+          <ImageGallery pictures={images} />
+        )}
+
+        {status === 'resolved' && totalHits > page * perPage && (
+          <Button onClickBtn={this.onBtnLoad} />
+        )}
+
+        {status === 'rejected' && <div className={s.Error}>{error}</div>}
+
+        {status === 'pending' && (
+          <div className={s.Loader}>
+            {' '}
+            <Load />
+          </div>
+        )}
       </div>
     );
   }
