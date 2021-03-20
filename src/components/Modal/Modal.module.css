@@ -12,6 +12,7 @@
 }
 
 .Modal {
+  position: relative;
   max-width: 800px;
   max-height: 600px;
   border-radius: 20px;

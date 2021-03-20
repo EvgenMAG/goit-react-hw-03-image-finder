@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
+import ButtonClose from '../ButtonClose/ButtonClose';
 
 import s from './Modal.module.css';
 
@@ -25,11 +26,19 @@ class Modal extends Component {
       this.props.onClose();
     }
   };
+  handleCloseBtnClick = () => {
+    this.props.onClose();
+  };
 
   render() {
     return createPortal(
       <div className={s.Overlay} onClick={this.handleBackDropClick}>
-        <div className={s.Modal}>{this.props.children}</div>
+        <div className={s.Modal}>
+          {this.props.children}
+          {this.props.children && (
+            <ButtonClose onBtnClick={this.handleCloseBtnClick} />
+          )}
+        </div>
       </div>,
       modalRoot,
     );

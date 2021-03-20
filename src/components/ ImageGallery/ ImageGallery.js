@@ -9,6 +9,7 @@ class ImageGallery extends Component {
     showModal: false,
     bigImg: '',
     bigAlt: '',
+    focusItem: false,
   };
 
   togleModal = () => {
@@ -25,8 +26,9 @@ class ImageGallery extends Component {
   };
 
   render() {
-    const { bigImg, bigAlt, showModal } = this.state;
-    const { pictures } = this.props;
+    const { bigImg, bigAlt, showModal, focusItem } = this.state;
+    const { pictures, onDeletCard } = this.props;
+    // console.log(onDeletCard);
     return (
       <>
         <ul className={s.gallery}>
@@ -35,6 +37,8 @@ class ImageGallery extends Component {
               <ImageGalleryItem
                 key={picture.id}
                 image={picture}
+                focus={focusItem}
+                onDeletCard={onDeletCard}
                 openModal={this.onImageClick}
               />
             );
@@ -42,7 +46,7 @@ class ImageGallery extends Component {
         </ul>
         {showModal && (
           <Modal onClose={this.togleModal}>
-            {<img src={bigImg} alt={bigAlt} />}
+            {bigImg && <img src={bigImg} alt={bigAlt} />}
           </Modal>
         )}
       </>

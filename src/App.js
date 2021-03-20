@@ -76,6 +76,15 @@ class App extends Component {
       });
   };
 
+  onChangeImagesArray = id => {
+    console.log(id);
+    const newArray = this.state.images.filter(image => {
+      return image.id !== id;
+    });
+    this.setState({ images: [...newArray] });
+    console.log(newArray);
+  };
+
   onSubmithandler = searchQuery => {
     this.setState(({ query }) => {
       if (query === searchQuery) return;
@@ -102,7 +111,10 @@ class App extends Component {
       <div className={s.App}>
         <Searchbar onSubmit={this.onSubmithandler} />
         {(status === 'resolved' || status === 'pending') && (
-          <ImageGallery pictures={images} />
+          <ImageGallery
+            pictures={images}
+            onDeletCard={this.onChangeImagesArray}
+          />
         )}
 
         {status === 'resolved' && totalHits > page * perPage && (
